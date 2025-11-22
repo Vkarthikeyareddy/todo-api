@@ -1,27 +1,36 @@
-def list_todos():
-    return []
+# todo_api/todo.py
 
-def add_todo(todos, item):
-    todos.append(item)
+from typing import List, Dict, Tuple
+
+
+Todo = Dict[str, object]  # {"id": int, "title": str, "completed": bool}
+
+
+def list_todos(todos: List[Todo]) -> List[Todo]:
     return todos
 
-def delete_todo(todos, item):
-    if item in todos:
-        todos.remove(item)
+
+def add_todo(todos: List[Todo], title: str, next_id: int) -> Tuple[List[Todo], Todo]:
+    todo = {"id": next_id, "title": title, "completed": False}
+    todos.append(todo)
+    return todos, todo
+
+
+def delete_todo(todos: List[Todo], todo_id: int) -> List[Todo]:
+    return [t for t in todos if t["id"] != todo_id]
+
+
+def mark_todo_done(todos: List[Todo], todo_id: int) -> List[Todo]:
+    for t in todos:
+        if t["id"] == todo_id:
+            t["completed"] = True
+            break
     return todos
 
-def mark_todo_done(todos, item, completed):
-    """
-    Mark a todo as done by adding it to the completed list if it's in todos.
-    We keep todos as a simple list of strings; completed is a separate list.
-    """
-    if item in todos and item not in completed:
-        completed.append(item)
-    return completed
 
-def get_pending_todos(todos, completed):
-    """
-    Return a list of todos that are not in the completed list.
-    """
-    return [item for item in todos if item not in completed]
+def get_pending_todos(todos: List[Todo]) -> List[Todo]:
+    return [t for t in todos if not t["completed"]]
 
+
+def get_completed_todos(todos: List[Todo]) -> List[Todo]:
+    return [t for t in todos if t["completed"]]

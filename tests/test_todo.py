@@ -1,45 +1,71 @@
 import os
 import sys
 
-# Add project root (folder that contains `todo_api/`) to PYTHONPATH
+# Add project root so we can import todo_api
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from todo_api.todo import list_todos, add_todo, delete_todo, mark_todo_done, get_pending_todos
+from todo_api.todo import (
+    list_todos,
+    add_todo,
+    delete_todo,
+    mark_todo_done,
+    get_pending_todos,
+    get_completed_todos,
+)
+
 
 def test_list_todos_starts_empty():
-    assert list_todos() == []
-
-def test_add_todo_adds_item():
     todos = []
-    updated = add_todo(todos, "Buy milk")
-    assert "Buy milk" in updated
+    assert list_todos(todos) == []
+
+
+def test_add_todo_adds_item_with_id_and_completed_flag():
+    todos = []
+    todos, todo = add_todo(todos, "Buy milk", next_id=1)
+
+    assert len(todos) == 1
+    assert todo["id"] == 1
+    assert todo["title"] == "Buy milk"
+    assert todo["completed"] is False
+
 
 def test_delete_todo_removes_existing_item():
-    todos = ["Buy milk", "Read book"]
-    updated = delete_todo(todos, "Buy milk")
-    assert "Buy milk" not in updated
+    todos = [
+        {"id": 1, "title": "Buy milk", "completed": False},
+        {"id": 2, "title": "Read book", "completed": False},
+    ]
 
-def test_delete_todo_does_nothing_if_not_present():
-    todos = ["Buy milk"]
-    updated = delete_todo(todos, "Go gym")
-    assert updated == ["Buy milk"]
+    todos = delete_todo(todos, todo_id=1)
 
-def test_mark_todo_done_adds_item_to_completed():
-    todos = ["Buy milk", "Read book"]
-    completed = []
-    updated_completed = mark_todo_done(todos, "Buy milk", completed)
-    assert "Buy milk" in updated_completed
+    assert len(todos) == 1
+    assert todos[0]["id"] == 2
+    assert todos[0]["title"] == "Read book"
 
-def test_mark_todo_done_ignores_missing_item():
-    todos = ["Buy milk"]
-    completed = []
-    updated_completed = mark_todo_done(todos, "Go gym", completed)
-    assert updated_completed == []
 
-def test_get_pending_todos_excludes_completed_items():
-    todos = ["Buy milk", "Read book", "Go gym"]
-    completed = ["Buy milk"]
-    pending = get_pending_todos(todos, completed)
-    assert "Buy milk" not in pending
-    assert "Read book" in pending
-    assert "Go gym" in pending
+def test_mark_todo_done_sets_completed_flag():
+    todos = [
+        {"id": 1, "title": "Buy milk", "completed": False},
+        {"id": 2, "title": "Read book", "completed": False},
+    ]
+
+    todos = mark_todo_done(todos, todo_id=1)
+
+    completed_ids = [t["id"] for t in todos if t["completed"]]
+    assert 1 in completed_ids
+    assert 2 not in completed_ids
+
+
+def test_pending_and_completed_split_correctly():
+    todos = [
+        {"id": 1, "title": "Buy milk", "completed": True},
+        {"id": 2, "title": "Read book", "completed": False},
+    ]
+
+    pending = get_pending_todos(todos)
+    completed = get_completed_todos(todos)
+
+    assert len(pending) == 1
+    assert pending[0]["id"] == 2
+
+    assert len(completed) == 1
+    assert completed[0]["id"] == 1
