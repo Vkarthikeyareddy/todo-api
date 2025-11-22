@@ -10,4 +10,11 @@ def delete_todo(todos, item):
         todos.remove(item)
     return todos
 
-#adding comment line
+def mark_todo_done(todos, item, completed):
+    """
+    Mark a todo as done by adding it to the completed list if it's in todos.
+    We keep todos as a simple list of strings; completed is a separate list.
+    """
+    if item in todos and item not in completed:
+        completed.append(item)
+    return completed
