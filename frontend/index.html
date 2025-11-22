@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo App UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f7f7f7;
+        }
+        h1 {
+            color: #333;
+        }
+        .todo {
+            display: flex;
+            justify-content: space-between;
+            background: #fff;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .done {
+            text-decoration: line-through;
+            color: #777;
+        }
+        button {
+            margin-left: 10px;
+        }
+        #todos {
+            max-width: 500px;
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+        }
+        .btn {
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Todo App (FastAPI + HTML)</h1>
+
+<div>
+    <input id="newTodo" placeholder="Enter a todo">
+    <button class="btn" onclick="addTodo()">Add</button>
+</div>
+
+<h2>Todos</h2>
+<div id="todos"></div>
+
+<script>
+    const API = "http://127.0.0.1:8000";
+
+    async function loadTodos() {
+        const res = await fetch(`${API}/todos`);
+        const todos = await res.json();
+
+        const container = document.getElementById("todos");
+        container.innerHTML = "";
+
+        todos.forEach(todo => {
+            const div = document.createElement("div");
+            div.className = "todo";
+
+            const title = document.createElement("span");
+            title.textContent = `${todo.id}. ${todo.title}`;
+            if (todo.completed) {
+                title.className = "done";
+            }
+
+            const actions = document.createElement("div");
+
+            const doneBtn = document.createElement("button");
+            doneBtn.textContent = "Done";
+            doneBtn.onclick = () => markDone(todo.id);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = () => deleteTodo(todo.id);
+
+            actions.appendChild(doneBtn);
+            actions.appendChild(deleteBtn);
+
+            div.appendChild(title);
+            div.appendChild(actions);
+
+            container.appendChild(div);
+        });
+    }
+
+    async function addTodo() {
+        const title = document.getElementById("newTodo").value;
+        if (!title) return;
+
+        await fetch(`${API}/todos`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({title})
+        });
+
+        document.getElementById("newTodo").value = "";
+        loadTodos();
+    }
+
+    async function markDone(id) {
+        await fetch(`${API}/todos/${id}/complete`, {
+            method: "POST"
+        });
+        loadTodos();
+    }
+
+    async function deleteTodo(id) {
+        await fetch(`${API}/todos/${id}`, { method: "DELETE" });
+        loadTodos();
+    }
+
+    loadTodos();
+</script>
+
+</body>
+</html>
