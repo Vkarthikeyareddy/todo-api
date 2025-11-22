@@ -18,3 +18,10 @@ def mark_todo_done(todos, item, completed):
     if item in todos and item not in completed:
         completed.append(item)
     return completed
+
+def get_pending_todos(todos, completed):
+    """
+    Return a list of todos that are not in the completed list.
+    """
+    return [item for item in todos if item not in completed]
+

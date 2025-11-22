@@ -4,7 +4,7 @@ import sys
 # Add project root (folder that contains `todo_api/`) to PYTHONPATH
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from todo_api.todo import list_todos, add_todo, delete_todo, mark_todo_done
+from todo_api.todo import list_todos, add_todo, delete_todo, mark_todo_done, get_pending_todos
 
 def test_list_todos_starts_empty():
     assert list_todos() == []
@@ -35,3 +35,11 @@ def test_mark_todo_done_ignores_missing_item():
     completed = []
     updated_completed = mark_todo_done(todos, "Go gym", completed)
     assert updated_completed == []
+
+def test_get_pending_todos_excludes_completed_items():
+    todos = ["Buy milk", "Read book", "Go gym"]
+    completed = ["Buy milk"]
+    pending = get_pending_todos(todos, completed)
+    assert "Buy milk" not in pending
+    assert "Read book" in pending
+    assert "Go gym" in pending
